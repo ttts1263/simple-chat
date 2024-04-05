@@ -1,14 +1,37 @@
 import express from 'express'
 import { createServer } from 'node:http'
+import { Server } from 'socket.io'
+import cors from 'cors'
 
 const app = express()
-const server = createServer(app)
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  })
+)
+
+const expressServer = createServer(app)
+const socketServer = new Server(expressServer, {
+  cors: {
+    origin: 'http://localhost:5173',
+    credentials: true,
+  },
+})
 
 app.get('/', (req, res) => {
   res.send('<h1>Hello world</h1>')
 })
 
+socketServer.on('connection', (socket) => {
+  console.log('a user connected:', socket.id)
+
+  socket.on('disconnect', () => {
+    console.log('user disconnected:', socket.id)
+  })
+})
+
 const PORT = process.env.PORT || 3000
-server.listen(PORT, () => {
+expressServer.listen(PORT, () => {
   console.log(`🎉 server running at http://localhost:${PORT}`)
 })
