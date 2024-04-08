@@ -2,6 +2,7 @@ import express from 'express'
 import { createServer } from 'node:http'
 import { Server } from 'socket.io'
 import cors from 'cors'
+import { socketKeys } from './SocketType'
 
 const app = express()
 app.use(
@@ -28,6 +29,11 @@ socketServer.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('user disconnected:', socket.id)
+  })
+
+  socket.on(socketKeys.message, (values) => {
+    console.log('message:', values)
+    socketServer.emit(socketKeys.message, values)
   })
 })
 
