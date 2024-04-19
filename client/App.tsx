@@ -1,25 +1,25 @@
 import styled from '@emotion/styled'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import io from 'socket.io-client'
-import { MessageType, socketKeys } from '../server/SocketType'
-
-const socketClient = io('http://localhost:3000')
-console.log('# socketClient:', socketClient)
+import { ChatMessageType, socketKeys } from '../server/SocketType'
 
 export default function App() {
+  const socketClient = io('http://localhost:3000')
+
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [userName, setUserName] = useState(socketClient.id)
-  const [chattings, setChattings] = useState<MessageType[]>([])
+  const [userName, setUserName] = useState('닉네임')
+  const [chattings, setChattings] = useState<ChatMessageType[]>([])
 
   useEffect(() => {
-    socketClient.on(socketKeys.message, (values: MessageType) => {
+    socketClient.on(socketKeys.chatMessage, (values: ChatMessageType) => {
+      console.log('# getMessage', values)
       setChattings((prevMessages) => [...prevMessages, values])
     })
     return () => {
-      socketClient.off(socketKeys.message)
+      socketClient.off(socketKeys.chatMessage)
     }
-  }, [])
+  }, [socketClient])
 
   useEffect(() => {
     // messages가 변경되면 스크롤
@@ -30,7 +30,7 @@ export default function App() {
     <StyledAppDiv>
       <ul id="messages">
         {chattings.map((chat) => (
-          <li key={chat.id}>
+          <li key={chat.chatId}>
             {chat.name}: {chat.message}
           </li>
         ))}
@@ -44,8 +44,9 @@ export default function App() {
             return
           }
           if (inputRef.current.value) {
-            socketClient.emit(socketKeys.message, {
-              id: `${socketClient.id}_${new Date().getTime()}`,
+            socketClient.emit(socketKeys.chatMessage, {
+              chatId: `${socketClient.id}_${new Date().getTime()}`,
+              userId: socketClient.id,
               name: userName,
               message: inputRef.current.value,
             })

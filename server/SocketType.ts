@@ -1,9 +1,10 @@
 export const socketKeys = {
-  message: 'socket-message',
+  chatMessage: 'chatMessage',
 }
 
-export type MessageType = {
-  id: string
+export type ChatMessageType = {
+  chatId: string
+  userId: string
   name: string
   message: string
 }
