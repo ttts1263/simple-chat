@@ -1,5 +1,5 @@
 import styled from '@emotion/styled'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import io from 'socket.io-client'
 import { MessageType, socketKeys } from '../server/SocketType'
 
@@ -9,6 +9,7 @@ console.log('# socketClient:', socketClient)
 export default function App() {
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const [userName, setUserName] = useState(socketClient.id)
   const [chattings, setChattings] = useState<MessageType[]>([])
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export default function App() {
     <StyledAppDiv>
       <ul id="messages">
         {chattings.map((chat) => (
-          <li key={chat.message}>
+          <li key={chat.id}>
             {chat.name}: {chat.message}
           </li>
         ))}
@@ -44,8 +45,8 @@ export default function App() {
           }
           if (inputRef.current.value) {
             socketClient.emit(socketKeys.message, {
-              id: socketClient.id,
-              name: socketClient.id,
+              id: `${socketClient.id}_${new Date().getTime()}`,
+              name: userName,
               message: inputRef.current.value,
             })
             console.log('message:', inputRef.current.value)
@@ -53,6 +54,12 @@ export default function App() {
           }
         }}
       >
+        <input
+          value={userName}
+          onChange={(e) => {
+            setUserName(e.target.value)
+          }}
+        />
         <input ref={inputRef} id="input" name="message" autoComplete="off" />
         <button>Send</button>
       </form>
